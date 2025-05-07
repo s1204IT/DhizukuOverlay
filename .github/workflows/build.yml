@@ -1,0 +1,35 @@
+name: Build
+
+on:
+  push:
+    paths-ignore:
+      - '*.md'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set environments
+        run: |
+          {
+            echo "commit=$(echo ${{ github.sha }} | cut -c -7)"
+            echo "repo=$(echo ${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/})"
+          } >> $GITHUB_ENV
+
+      - name: Build
+        run: |
+          export PATH=$PATH:$ANDROID_SDK_ROOT/build-tools/35.0.1
+          ./build.sh
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.repo }}@${{ env.commit }}
+          path: DhizukuOverlay.apk
